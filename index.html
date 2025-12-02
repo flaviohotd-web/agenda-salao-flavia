@@ -2,9 +2,18 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Agenda - Salão da Tia</title>
+  <title>Agenda - Salão da Flávia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
+    /* Por padrão (sem admin), o painel some e o formulário ocupa a tela toda */
+body:not(.admin) #admin-panel {
+  display: none;
+}
+
+body:not(.admin) .layout {
+  grid-template-columns: 1fr;
+}
+
     :root {
       --primary: #e91e63;
       --primary-dark: #c2185b;
@@ -335,27 +344,7 @@
 <section id="admin-panel" class="card">
   <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
   ...
-
-
-  <!-- Login simples para cabeleireira -->
-  <div class="admin-row">
-    <label for="admin-pin">Modo cabeleireira (restrito)</label>
-    <div style="display:flex; gap:8px; margin:4px 0 6px;">
-      <input
-        id="admin-pin"
-        type="password"
-        placeholder="Digite o PIN"
-        style="max-width:140px;"
-      />
-      <button type="button" class="secondary btn-sm" id="admin-button">
-        Entrar
-      </button>
-    </div>
-    <div class="helper-text">
-      Somente a cabeleireira deve saber esse PIN.
-    </div>
-  </div>
-
+  
   <div class="topbar">
     <span id="appointments-counter">0 agendamentos</span>
     <select id="status-filter" class="filter-select">
@@ -404,31 +393,19 @@
     let appointments = loadAppointments();
     let currentFilter = "all";
 
-    // ----------------- ELEMENTOS -----------------
-    const form = document.getElementById("appointment-form");
-    const listEl = document.getElementById("appointments-list");
-    const statusFilter = document.getElementById("status-filter");
-    const counterEl = document.getElementById("appointments-counter");
+   // ----------------- ELEMENTOS -----------------
+const form = document.getElementById("appointment-form");
+const listEl = document.getElementById("appointments-list");
+const statusFilter = document.getElementById("status-filter");
+const counterEl = document.getElementById("appointments-counter");
 
-    // elementos do modo cabeleireira
-    const adminPinInput = document.getElementById("admin-pin");
-    const adminButton = document.getElementById("admin-button");
-    let isAdmin = false;
-    const ADMIN_PIN = "1234"; // TROQUE para um PIN que só a sua tia saiba
-    
-    // ------- controle de página cliente x página master -------
-const adminPanel = document.getElementById("admin-panel");
-const layout = document.querySelector(".layout");
-const urlParams = new URLSearchParams(window.location.search);
-const isAdminPage = urlParams.get("admin") === "1";
+// ----------------- MODO ADMIN (link master) -----------------
+const params = new URLSearchParams(window.location.search);
+const isAdmin = params.get("admin") === "1";
 
-// se NÃO for a página master (?admin=1), esconde o painel
-if (!isAdminPage && adminPanel) {
-  adminPanel.style.display = "none";
-  // deixa o formulário ocupando a largura toda
-  if (layout) {
-    layout.style.gridTemplateColumns = "1fr";
-  }
+// se for página master (?admin=1), marcamos o body como admin
+if (isAdmin) {
+  document.body.classList.add("admin");
 }
 
 
@@ -620,26 +597,6 @@ if (!isAdminPage && adminPanel) {
       renderAppointments();
     });
 
-    // botão do PIN da cabeleireira
-    adminButton.addEventListener("click", () => {
-      const value = adminPinInput.value.trim();
-      if (!value) {
-        alert("Digite o PIN da cabeleireira.");
-        return;
-      }
-
-      if (value === ADMIN_PIN) {
-        isAdmin = true;
-        adminPinInput.value = "";
-        adminPinInput.disabled = true;
-        adminButton.textContent = "Cabeleireira conectada";
-        adminButton.disabled = true;
-        renderAppointments();
-      } else {
-        alert("PIN incorreto.");
-      }
-    });
-
     // ----------------- INIT: define data mínima = hoje -----------------
     (function init() {
       const dateInput = document.getElementById("date");
@@ -653,6 +610,7 @@ if (!isAdminPage && adminPanel) {
       renderAppointments();
     })();
   </script>
+
 
 
 
