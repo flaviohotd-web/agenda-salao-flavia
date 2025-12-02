@@ -319,7 +319,7 @@
           </div>
 
           <div>
-            <label for="service">Serviço</label>
+            <label for="service">Serviço</</label>
             <select id="service" required>
               <option value="">Selecione um serviço</option>
               <option value="Corte feminino">Corte feminino</option>
@@ -387,7 +387,7 @@
   </div>
 
   <script>
-    // ================== CONFIGURAÇÃO DA API (Apps Script) ==================
+    // ================== CONFIG DA API (Apps Script) ==================
     const API_URL = "https://script.google.com/macros/s/AKfycbwuiSvV8oRh5r6AD2H_fIKgIENcjTXUCzt6DuJdgyTxVG6Rw2M89hB1hXsXyuDkFpg/exec";
 
     // ================== ESTADO GLOBAL ==================
@@ -400,6 +400,7 @@
     const statusFilter = document.getElementById("status-filter");
     const counterEl = document.getElementById("appointments-counter");
 
+    // Detecta se é admin pelo parâmetro ?admin=1
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
 
@@ -430,23 +431,21 @@
     async function createAppointmentOnServer(apt) {
       await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "create",
-          appointment: apt,
-        }),
+          appointment: apt
+        })
       });
     }
 
     async function updateStatusOnServer(id, newStatus) {
       await fetch(API_URL, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           action: "updateStatus",
           id: id,
-          status: newStatus,
-        }),
+          status: newStatus
+        })
       });
     }
 
@@ -585,7 +584,7 @@
       if (!timeStr) return false;
       const [h, m] = timeStr.split(":").map(Number);
       const total = h * 60 + m;
-      // 09:00 (540) até 19:00 (1140)
+      // 09:00 (540) a 19:00 (1140)
       return total >= 540 && total <= 1140;
     }
 
@@ -679,7 +678,7 @@
           date,
           time,
           status: "pending",
-          createdAt: new Date().toISOString(),
+          createdAt: new Date().toISOString()
         };
 
         try {
@@ -716,7 +715,6 @@
         dateInput.value = min;
       }
 
-      // Sempre carrega agendamentos no início (admin ou não)
       await fetchAppointmentsFromServer();
     })();
   </script>
