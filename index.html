@@ -6,13 +6,13 @@
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
     /* Por padrão (sem admin), o painel some e o formulário ocupa a tela toda */
-body:not(.admin) #admin-panel {
-  display: none;
-}
+    body:not(.admin) #admin-panel {
+      display: none;
+    }
 
-body:not(.admin) .layout {
-  grid-template-columns: 1fr;
-}
+    body:not(.admin) .layout {
+      grid-template-columns: 1fr;
+    }
 
     :root {
       --primary: #e91e63;
@@ -279,7 +279,7 @@ body:not(.admin) .layout {
     </header>
 
     <div class="layout">
-      <!-- FORMULÁRIO DE AGENDAMENTO -->
+      <!-- FORMULÁRIO DE AGENDAMENTO (CLIENTE) -->
       <section class="card">
         <h2>Agendar horário <span class="badge">Cliente</span></h2>
 
@@ -340,21 +340,19 @@ body:not(.admin) .layout {
         </form>
       </section>
 
-    <!-- PAINEL DA CABELEIREIRA -->
-<section id="admin-panel" class="card">
-  <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
-  ...
-  
-  <div class="topbar">
-    <span id="appointments-counter">0 agendamentos</span>
-    <select id="status-filter" class="filter-select">
-      <option value="all">Todos os status</option>
-      <option value="pending">Pendentes</option>
-      <option value="confirmed">Confirmados</option>
-      <option value="canceled">Cancelados</option>
-    </select>
-  </div>
+      <!-- PAINEL DA CABELEIREIRA (MASTER) -->
+      <section id="admin-panel" class="card">
+        <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
 
+        <div class="topbar">
+          <span id="appointments-counter">0 agendamentos</span>
+          <select id="status-filter" class="filter-select">
+            <option value="all">Todos os status</option>
+            <option value="pending">Pendentes</option>
+            <option value="confirmed">Confirmados</option>
+            <option value="canceled">Cancelados</option>
+          </select>
+        </div>
 
         <div class="appointments-list" id="appointments-list">
           <div class="no-appointments">
@@ -371,7 +369,6 @@ body:not(.admin) .layout {
   </div>
 
   <script>
-      <script>
     // ----------------- UTILITÁRIOS DE STORAGE -----------------
     const STORAGE_KEY = "salao_tia_agendamentos_v1";
 
@@ -393,21 +390,20 @@ body:not(.admin) .layout {
     let appointments = loadAppointments();
     let currentFilter = "all";
 
-   // ----------------- ELEMENTOS -----------------
-const form = document.getElementById("appointment-form");
-const listEl = document.getElementById("appointments-list");
-const statusFilter = document.getElementById("status-filter");
-const counterEl = document.getElementById("appointments-counter");
+    // ----------------- ELEMENTOS -----------------
+    const form = document.getElementById("appointment-form");
+    const listEl = document.getElementById("appointments-list");
+    const statusFilter = document.getElementById("status-filter");
+    const counterEl = document.getElementById("appointments-counter");
 
-// ----------------- MODO ADMIN (link master) -----------------
-const params = new URLSearchParams(window.location.search);
-const isAdmin = params.get("admin") === "1";
+    // ----------------- MODO ADMIN (link master) -----------------
+    const params = new URLSearchParams(window.location.search);
+    const isAdmin = params.get("admin") === "1";
 
-// se for página master (?admin=1), marcamos o body como admin
-if (isAdmin) {
-  document.body.classList.add("admin");
-}
-
+    // se for página master (?admin=1), marcamos o body como admin
+    if (isAdmin) {
+      document.body.classList.add("admin");
+    }
 
     // ----------------- RENDER -----------------
     function renderAppointments() {
@@ -489,7 +485,7 @@ if (isAdmin) {
           main.appendChild(whatsapp);
           main.appendChild(statusLabel);
 
-          // ações (só aparecem para cabeleireira logada)
+          // ações (só aparecem para a Flávia no link master)
           const actions = document.createElement("div");
           actions.className = "appointment-actions";
 
@@ -502,7 +498,7 @@ if (isAdmin) {
             const btnCancel = document.createElement("button");
             btnCancel.className = "secondary btn-sm";
             btnCancel.textContent = "❌ Cancelar";
-            btnCancel.onclick = () => updateStatus(apt.id, "canceled");
+            btnCancel.onclick = () => updateStatus(apt.id, "canceled";
 
             const btnWhats = document.createElement("button");
             btnWhats.className = "primary btn-sm";
@@ -516,7 +512,7 @@ if (isAdmin) {
             const info = document.createElement("span");
             info.className = "helper-text";
             info.textContent =
-              "Somente a cabeleireira pode gerenciar os horários.";
+              "Somente a cabeleireira pode gerenciar os horários (acesso master).";
             actions.appendChild(info);
           }
 
@@ -541,7 +537,6 @@ if (isAdmin) {
     }
 
     function openWhatsapp(apt) {
-      // usa o número digitado no formulário (com DDD)
       const raw = apt.whatsapp.replace(/\D/g, "");
       const message = encodeURIComponent(
         `Olá, ${apt.clientName}! Aqui é do salão da Tia. Seu horário para ${apt.service} em ${formatDate(
@@ -610,10 +605,5 @@ if (isAdmin) {
       renderAppointments();
     })();
   </script>
-
-
-
-
-
-
-
+</body>
+</html>
