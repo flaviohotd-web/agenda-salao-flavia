@@ -417,12 +417,17 @@
     // ----------------- MODO (CLIENTE x ADMIN) -----------------
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
+    
+   document.body.classList.remove("admin");
+document.body.classList.remove("client");
 
-    if (isAdmin) {
-      document.body.classList.add("admin");
-    } else {
-      document.body.classList.add("client");
-    }
+const isAdmin = params.get("admin") === "1";
+
+if (isAdmin) {
+  document.body.classList.add("admin");
+} else {
+  document.body.classList.add("client");
+}
 
     // ----------------- RENDER -----------------
     function renderAppointments() {
@@ -645,4 +650,5 @@ function notifyWhatsapp(apt, newStatus) {
   </script>
 </body>
 </html>
+
 
