@@ -400,7 +400,6 @@
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
 
-    // se for página master (?admin=1), marcamos o body como admin
     if (isAdmin) {
       document.body.classList.add("admin");
     }
@@ -485,7 +484,6 @@
           main.appendChild(whatsapp);
           main.appendChild(statusLabel);
 
-          // ações (só aparecem para a Flávia no link master)
           const actions = document.createElement("div");
           actions.className = "appointment-actions";
 
@@ -587,12 +585,14 @@
       );
     });
 
-    statusFilter.addEventListener("change", (e) => {
-      currentFilter = e.target.value;
-      renderAppointments();
-    });
+    if (statusFilter) {
+      statusFilter.addEventListener("change", (e) => {
+        currentFilter = e.target.value;
+        renderAppointments();
+      });
+    }
 
-    // ----------------- INIT: define data mínima = hoje -----------------
+    // ----------------- INIT -----------------
     (function init() {
       const dateInput = document.getElementById("date");
       const today = new Date();
@@ -607,4 +607,3 @@
   </script>
 </body>
 </html>
-
