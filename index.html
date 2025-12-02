@@ -3,14 +3,14 @@
 <html lang="pt-BR">
 <head>
   <meta charset="UTF-8" />
-  <title>Agenda Online – Salão da Tia</title>
+  <title>Agendar Horário – Salão da Tia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta name="description" content="Agendamento online para o Salão da Tia. Reserve seu horário ou gerencie agendamentos.">
+  <meta name="description" content="Agendamento online do Salão da Tia. Reserve seu horário de forma rápida e prática pelo site.">
 
   <!-- Google Fonts -->
   https://fonts.googleapis.com
   https://fonts.gstatic.com
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans;500;700&display=swap
+  https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap
 
   <style>
     :root {
@@ -22,17 +22,13 @@
       --muted: #777777;
       --radius: 16px;
       --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
-      --accent: #ffb7c5;
       --success: #25D366;
-    }
-
-    * { box-sizing: border-box; font-family: "Noto Sans JP", sans-serif; }
+    font-family: "Noto Sans JP", sans-serif; }
 
     body {
       margin: 0;
+      background: radial-gradient(circle at top left, #ffe3ee, #faf5f7);
       color: var(--text);
-      background: url('https://i.ibb.co/4f9sY7k/sakura-bg.jpg') no-repeat center top fixed, linear-gradient(#fff, #fff);
-      background-size: cover;
       display: flex;
       justify-content: center;
       padding: 16px;
@@ -42,26 +38,26 @@
 
     header { text-align: center; margin-bottom: 16px; }
     header h1 { margin: 8px 0 4px 0; font-size: 2rem; color: var(--primary-dark); }
-    header p { margin: 0; color: var(--muted); }
-
-    .brand-mark {
-      display: inline-flex; align-items: center; gap: 8px;
-      padding: 6px 12px; border-radius: 999px; background: #fff; box-shadow: var(--shadow);
-      font-size: 0.85rem; color: var(--primary-dark);
-    }
-
-    .layout { display: grid; grid-template-columns: 1fr; gap: 16px; }
-
-    .card {
-      background: var(--card-bg);
+    header background: var(--card-bg);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
       padding: 16px 18px;
-      position: relative;
     }
 
-    .card h2 { margin-top: 0; font-size: 1.2rem; display: flex; justify-content: space-between; }
-    .badge { font-size: 0.7rem; padding: 2px 8px; border-radius: 999px; background: #fce4ec; color: var(--primary-dark); }
+    .card h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+      display: flex;
+      justify-content: space-between;
+    }
+
+    .badge {
+      font-size: 0.7rem;
+      padding: 2px 8px;
+      border-radius: 999px;
+      background: #fce4ec;
+      color: var(--primary-dark);
+    }
 
     label { font-size: 0.85rem; font-weight: 500; display: block; margin-bottom: 4px; color: var(--muted); }
     input, select {
@@ -89,95 +85,58 @@
     }
     .whatsapp-btn:hover { background: #1ebe5d; }
 
-    .appointments-list {
-      display: flex; flex-direction: column; gap: 10px; max-height: 420px; overflow-y: auto;
-    }
-    .appointment-card {
-      border-radius: 12px; border: 1px solid #f1e0e5; padding: 10px 12px; background: #fff9fb;
-      display: grid; grid-template-columns: 1fr auto; gap: 6px; align-items: center;
-    }
-    .appointment-main { font-size: 0.85rem; }
-    .appointment-main strong { font-size: 0.93rem; }
-    .appointment-meta { font-size: 0.75rem; color: var(--muted); }
-    .appointment-actions { display: flex; flex-direction: column; gap: 4px; align-items: flex-end; }
-    .pill-group { display: flex; flex-wrap: wrap; gap: 6px; margin: 6px 0 4px; }
-    .pill { font-size: 0.78rem; padding: 3px 8px; border-radius: 999px; background: #fce4ec; color: var(--primary-dark); }
-    .status { font-size: 0.75rem; border-radius: 999px; padding: 3px 8px; display: inline-block; }
-    .status-pending { background: #fff3cd; color: #856404; }
-    .status-confirmed { background: #d4edda; color: #155724; }
-    .status-canceled { background: #f8d7da; color: #721c24; }
-
     footer { text-align: center; margin-top: 10px; font-size: 0.75rem; color: var(--muted); }
   </style>
 </head>
 <body>
   <main class="app">
     <header>
-      <div class="brand-mark">🌸 Agenda Online ・ Sakura Edition</div>
       <h1>Salão da Tia</h1>
-      <p>Agende seu horário ou gerencie agendamentos</p>
+      <p>Agende seu horário de forma rápida e prática</p>
     </header>
 
-    <div class="layout">
-      <!-- Painel do Cliente -->
-      <section id="client-panel" class="card">
-        <h2>Agendar horário <span class="badge">Cliente</span></h2>
-        <form id="appointment-form">
-          <div>
-            <label for="client-name">Nome completo</label>
-            <input id="client-name" type="text" placeholder="Ex: Maria Silva" required />
-          </div>
-          <div>
-            <label for="client-whatsapp">WhatsApp</label>
-            <input id="client-whatsapp" type="tel" placeholder="(00) 00000-0000" required />
-            <div class="helper-text">Use um número válido para confirmação do horário.</div>
-          </div>
-          <div>
-            <label for="service">Serviço</label>
-            <select id="service" required>
-              <option value="">Selecione um serviço</option>
-              <option value="Corte feminino">Corte feminino</option>
-              <option value="Corte masculino">Corte masculino</option>
-              <option value="Escova">Escova</option>
-              <option value="Coloração">Coloração</option>
-              <option value="Luzes/Mechas">Luzes/Mechas</option>
-              <option value="Hidratação">Hidratação</option>
-              <option value="Progressiva/Botox">Progressiva/Botox</option>
-            </select>
-          </div>
-          <div>
-            <label for="date">Data</label>
-            <input id="date" type="date" required />
-          </div>
-          <div>
-            <label for="time">Horário</label>
-            <input id="time" type="time" required />
-            <div class="helper-text">Horário de funcionamento padrão: 09:00 às 19:00.</div>
-          </div>
-          <button type="submit" class="primary">✨ Confirmar solicitação</button>
-        </form>
-        https://wa.me/5562998083581
-          📲 Falar com o salão pelo WhatsApp
-        </a>
-      </section>
-
-      <!-- Painel da Cabeleireira -->
-      <section id="admin-panel" class="card">
-        <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
-        <div class="topbar">
-          <span id="appointments-counter">0 agendamentos</span>
-          <select id="status-filter" class="filter-select">
-            <option value="all">Todos os status</option>
-            <option value="pending">Pendentes</option>
-            <option value="confirmed">Confirmados</option>
-            <option value="canceled">Cancelados</option>
+    <section id="client-panel" class="card">
+      <h2>Agendar horário <span class="badge">Cliente</span></h2>
+      <form id="appointment-form">
+        <div>
+          <label for="client-name">Nome completo</label>
+          <input id="client-name" type="text" placeholder="Ex: Maria Silva" required />
+        </div>
+        <div>
+          <label for="client-whatsapp">WhatsApp</label>
+          <input id="client-whatsapp" type="tel" placeholder="(00) 00000-0000" required />
+          <div class="helper-text">Use um número válido para confirmação do horário.</div>
+        </div>
+        <div>
+          <label for="service">Serviço</label>
+          <select id="service" required>
+            <option value="">Selecione um serviço</option>
+            <option value="Corte feminino">Corte feminino</option>
+            <option value="Corte masculino">Corte masculino</option>
+            <option value="Escova">Escova</option>
+            <option value="Coloração">Coloração</option>
+            <option value="Luzes/Mechas">Luzes/Mechas</option>
+            <option value="Hidratação">Hidratação</option>
+            <option value="Progressiva/Botox">Progressiva/Botox</option>
           </select>
         </div>
-        <div class="appointments-list" id="appointments-list">
-          <div class="no-appointments">Nenhum agendamento ainda. Assim que uma cliente enviar o pedido, aparecerá aqui. 💅</div>
+        <div>
+          <label for="date">Data</label>
+          <input id="date" type="date" required />
         </div>
-      </section>
-    </div>
+        <div>
+          <label for="time">Horário</label>
+          <input id="time" type="time" required />
+          <div class="helper-text">Horário de funcionamento padrão: 09:00 às 19:00.</div>
+        </div>
+        <button type="submit" class="primary">✨ Confirmar solicitação</button>
+      </form>
+
+      <!-- Botão WhatsApp funcional -->
+      https://wa.me/5562998083581
+        📲 Falar com o salão pelo WhatsApp
+      </a>
+    </section>
 
     <footer>
       Projeto de agendamento básico – personalizado para o Salão da Tia. ✂️
@@ -195,80 +154,16 @@
       localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
     }
     let appointments = loadAppointments();
-    let currentFilter = "all";
-
     const form = document.getElementById("appointment-form");
-    const listEl = document.getElementById("appointments-list");
-    const statusFilter = document.getElementById("status-filter");
-    const counterEl = document.getElementById("appointments-counter");
 
-    const params = new URLSearchParams(window.location.search);
-    const isAdmin = params.get("admin") === "1";
-    document.getElementById("client-panel").style.display = isAdmin ? "none" : "block";
-    document.getElementById("admin-panel").style.display = isAdmin ? "block" : "none";
-
-    function formatDate(isoDate) {
-      const [year, month, day] = isoDate.split("-");
-      return `${day}/${month}/${year}`;
+    function normalizeWhatsapp(raw) {
+      const digits = (raw || "").replace(/\D/g, "");
+      return digits.length >= 11 ? digits : null;
     }
-
-    function updateStatus(id, newStatus) {
-      appointments = appointments.map((apt) =>
-        apt.id === id ? { ...apt, status: newStatus } : apt
-      );
-      saveAppointments(appointments);
-      renderAppointments();
-    }
-
-    function openWhatsapp(apt) {
-      const raw = apt.whatsapp.replace(/\D/g, "");
-      const message = encodeURIComponent(
-        `Olá, ${apt.clientName}! Seu horário para ${apt.service} em ${formatDate(apt.date)} às ${apt.time} está ${
-          apt.status === "confirmed" ? "CONFIRMADO ✅" : "PENDENTE DE CONFIRMAÇÃO"
-        }.`
-      );
-      window.open(`https://wa.me/55${raw}?text=${message}`, "_blank");
-    }
-
-    function renderAppointments() {
-      if (!listEl) return;
-      listEl.innerHTML = "";
-      const filtered = appointments.filter((apt) => currentFilter === "all" || apt.status === currentFilter);
-      counterEl.textContent = `${appointments.length} agendamentos`;
-      if (filtered.length === 0) {
-        const empty = document.createElement("div");
-        empty.className = "no-appointments";
-        empty.textContent = "Nenhum agendamento para o filtro selecionado.";
-        listEl.appendChild(empty);
-        return;
-      }
-      filtered.sort((a, b) => `${a.date} ${a.time}`.localeCompare(`${b.date} ${b.time}`))
-        .forEach((apt) => {
-          const card = document.createElement("div");
-          card.className = "appointment-card";
-          const main = document.createElement("div");
-          main.className = "appointment-main";
-          main.innerHTML = `<strong>${apt.clientName}</strong>
-            <div class="pill-group"><span class="pill">${apt.service}</span></div>
-            <div class="appointment-meta">${formatDate(apt.date)} • ${apt.time}</div>
-            <div class="appointment-meta">WhatsApp: ${apt.whatsapp}</div>
-            <span class="status ${apt.status === "pending" ? "status-pending" : apt.status === "confirmed" ? "status-confirmed" : "status-canceled"}">
-              ${apt.status === "pending" ? "Pendente" : apt.status === "confirmed" ? "Confirmado" : "Cancelado"}
-            </span>`;
-          const actions = document.createElement("div");
-          actions.className = "appointment-actions";
-          ["✅ Confirmar", "❌ Cancelar", "📲 WhatsApp"].forEach((txt, i) => {
-            const btn = document.createElement("button");
-            btn.className = i === 2 ? "primary btn-sm" : "secondary btn-sm";
-            btn.textContent = txt;
-            btn.onclick = () => i === 0 ? updateStatus(apt.id, "confirmed") :
-                              i === 1 ? updateStatus(apt.id, "canceled") : openWhatsapp(apt);
-            actions.appendChild(btn);
-          });
-          card.appendChild(main);
-          card.appendChild(actions);
-          listEl.appendChild(card);
-        });
+    function withinBusinessHours(timeStr) {
+      const [h, m] = timeStr.split(":").map(Number);
+      const total = h * 60 + m;
+      return total >= 540 && total <= 1140; // 09:00 a 19:00
     }
 
     if (form) {
@@ -279,28 +174,33 @@
         const service = document.getElementById("service").value;
         const date = document.getElementById("date").value;
         const time = document.getElementById("time").value;
-        if (!clientName || !whatsappRaw || !service || !date || !time) return alert("Preencha todos os campos.");
+
+        if (!clientName || !whatsappRaw || !service || !date || !time) {
+          alert("Preencha todos os campos."); return;
+        }
+        const whatsapp = normalizeWhatsapp(whatsappRaw);
+        if (!whatsapp) { alert("Informe um WhatsApp válido."); return; }
+        if (!withinBusinessHours(time)) { alert("Horário deve ser entre 09:00 e 19:00."); return; }
+
         const id = Date.now().toString();
-        appointments.push({ id, clientName, whatsapp: whatsappRaw, service, date, time, status: "pending" });
+        const newAppointment = { id, clientName, whatsapp: whatsappRaw, service, date, time, status: "pending" };
+        appointments.push(newAppointment);
         saveAppointments(appointments);
         form.reset();
         alert("Pedido enviado! A cabeleireira irá confirmar pelo WhatsApp. 💕");
       });
     }
 
-    if (statusFilter) {
-      statusFilter.addEventListener("change", (e) => { currentFilter = e.target.value; renderAppointments(); });
-    }
-
     (function init() {
       const dateInput = document.getElementById("date");
       if (dateInput) {
         const today = new Date();
-        const y = today.getFullYear(), m = String(today.getMonth() + 1).padStart(2, "0"), d = String(today.getDate()).padStart(2, "0");
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, "0");
+        const d = String(today.getDate()).padStart(2, "0");
         dateInput.min = `${y}-${m}-${d}`;
         dateInput.value = `${y}-${m}-${d}`;
       }
-      renderAppointments();
     })();
   </script>
 </body>
