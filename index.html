@@ -10,10 +10,14 @@
   <!-- Google Fonts -->
   https://fonts.googleapis.com
   https://fonts.gstatic.com
-  https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;700&display=swap
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans;500;700&display=swap
 
   <style>
-   -bg: #ffffff;
+    :root {
+      --primary: #e91e63;
+      --primary-dark: #c2185b;
+      --bg: #faf5f7;
+      --card-bg: #ffffff;
       --text: #333333;
       --muted: #777777;
       --radius: 16px;
@@ -30,7 +34,7 @@
       background: url('https://i.ibb.co/4f9sY7k/sakura-bg.jpg') no-repeat center top fixed, linear-gradient(#fff, #fff);
       background-size: cover;
       display: flex;
-      center;
+      justify-content: center;
       padding: 16px;
     }
 
