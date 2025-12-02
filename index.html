@@ -1,160 +1,275 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Agenda - Salão da Flávia</title>
   <style>
     body {
-      font-family: sans-serif;
-      padding: 16px;
+      margin: 0;
+      font-family: Arial, sans-serif;
       background: #fff0f5;
+      color: #333;
     }
 
-    .card {
-      max-width: 480px;
+    .container {
+      max-width: 960px;
       margin: auto;
-      background: white;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
       padding: 20px;
     }
 
-    h2 {
+    header {
       text-align: center;
-      color: #c2185b;
+      margin-bottom: 20px;
+    }
+
+    .card {
+      background: white;
+      padding: 20px;
+      border-radius: 10px;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      margin-bottom: 20px;
     }
 
     label {
+      font-weight: bold;
       display: block;
       margin-top: 10px;
-      font-weight: bold;
-      font-size: 0.9rem;
     }
 
     input, select {
       width: 100%;
       padding: 8px;
-      margin-top: 4px;
-      border-radius: 6px;
+      margin-top: 5px;
+      border-radius: 5px;
       border: 1px solid #ccc;
       margin-bottom: 10px;
     }
 
     button {
-      width: 100%;
-      padding: 10px;
-      background-color: #e91e63;
+      padding: 10px 20px;
+      background: #e91e63;
       color: white;
       border: none;
-      border-radius: 6px;
+      border-radius: 5px;
       cursor: pointer;
-      font-size: 1rem;
+    }
+
+    .appointments-list {
+      max-height: 400px;
+      overflow-y: auto;
+    }
+
+    .appointment {
+      padding: 10px;
+      border-bottom: 1px solid #ddd;
     }
 
     .status {
-      margin-top: 20px;
-      font-size: 0.9rem;
-      color: green;
-      text-align: center;
+      display: inline-block;
+      padding: 4px 8px;
+      border-radius: 10px;
+      font-size: 0.8rem;
     }
 
-    .error {
-      color: red;
+    .status-pending { background: #fff3cd; color: #856404; }
+    .status-confirmed { background: #d4edda; color: #155724; }
+    .status-canceled { background: #f8d7da; color: #721c24; }
+
+    .admin-buttons button {
+      margin-right: 6px;
+      margin-top: 6px;
+    }
+
+    @media (max-width: 600px) {
+      .card {
+        padding: 15px;
+      }
     }
   </style>
 </head>
 <body>
-  <div class="card">
-    <h2>Agendamento - Salão da Flávia</h2>
+  <div class="container">
+    <header>
+      <h1>Agenda do Salão da Flávia 💇‍♀️</h1>
+      <p>Faça seu agendamento online!</p>
+    </header>
 
-    <form id="form-agendamento">
-      <label for="nome">Nome completo</label>
-      <input id="nome" type="text" required />
+    <!-- Formulário para cliente -->
+    <section id="client-panel" class="card">
+      <h2>Agendar Horário</h2>
+      <form id="form-agendamento">
+        <label for="nome">Nome completo</label>
+        <input id="nome" type="text" required>
 
-      <label for="whatsapp">WhatsApp</label>
-      <input id="whatsapp" type="tel" required placeholder="(00) 00000-0000" />
+        <label for="whatsapp">WhatsApp</label>
+        <input id="whatsapp" type="tel" placeholder="(00) 00000-0000" required>
 
-      <label for="servico">Serviço</label>
-      <select id="servico" required>
-        <option value="">Escolha</option>
-        <option value="Corte feminino">Corte feminino</option>
-        <option value="Corte masculino">Corte masculino</option>
-        <option value="Coloração">Coloração</option>
-        <option value="Escova">Escova</option>
-        <option value="Progressiva">Progressiva</option>
+        <label for="servico">Serviço</label>
+        <select id="servico" required>
+          <option value="">Escolha um serviço</option>
+          <option>Corte feminino</option>
+          <option>Corte masculino</option>
+          <option>Coloração</option>
+          <option>Escova</option>
+          <option>Progressiva</option>
+        </select>
+
+        <label for="data">Data</label>
+        <input id="data" type="date" required>
+
+        <label for="hora">Hora</label>
+        <input id="hora" type="time" required>
+
+        <button type="submit">Confirmar Agendamento</button>
+      </form>
+      <p id="mensagem" style="margin-top: 10px;"></p>
+    </section>
+
+    <!-- Painel Admin -->
+    <section id="admin-panel" class="card" style="display: none;">
+      <h2>Agendamentos</h2>
+
+      <label for="status-filter">Filtrar por status</label>
+      <select id="status-filter">
+        <option value="all">Todos</option>
+        <option value="pending">Pendentes</option>
+        <option value="confirmed">Confirmados</option>
+        <option value="canceled">Cancelados</option>
       </select>
 
-      <label for="data">Data</label>
-      <input id="data" type="date" required />
-
-      <label for="hora">Hora</label>
-      <input id="hora" type="time" required />
-
-      <button type="submit">Agendar</button>
-    </form>
-
-    <div id="mensagem" class="status"></div>
+      <div class="appointments-list" id="lista-agendamentos"></div>
+    </section>
   </div>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
+    document.addEventListener("DOMContentLoaded", () => {
       const API_URL = "https://script.google.com/macros/s/AKfycbwuiSvV8oRh5r6AD2H_fIKgIENcjTXUCzt6DuJdgyTxVG6Rw2M89hB1hXsXyuDkFpg/exec";
 
       const form = document.getElementById("form-agendamento");
-      const mensagem = document.getElementById("mensagem");
+      const clientPanel = document.getElementById("client-panel");
+      const adminPanel = document.getElementById("admin-panel");
+      const msgEl = document.getElementById("mensagem");
+      const lista = document.getElementById("lista-agendamentos");
+      const statusFilter = document.getElementById("status-filter");
 
-      const dataInput = document.getElementById("data");
-      const hoje = new Date();
-      const yyyy = hoje.getFullYear();
-      const mm = String(hoje.getMonth() + 1).padStart(2, "0");
-      const dd = String(hoje.getDate()).padStart(2, "0");
-      dataInput.min = `${yyyy}-${mm}-${dd}`;
+      const isAdmin = new URLSearchParams(window.location.search).get("admin") === "1";
+      clientPanel.style.display = isAdmin ? "none" : "block";
+      adminPanel.style.display = isAdmin ? "block" : "none";
 
-      form.addEventListener("submit", async function (e) {
-        e.preventDefault();
-        mensagem.textContent = "";
+      async function buscarAgendamentos() {
+        try {
+          const res = await fetch(API_URL);
+          const json = await res.json();
+          const listaFiltrada = json.appointments.filter(apt => {
+            const filtro = statusFilter.value;
+            return filtro === "all" || apt.status === filtro;
+          });
 
-        const nome     = document.getElementById("nome").value.trim();
-        const whatsapp = document.getElementById("whatsapp").value.trim();
-        const servico  = document.getElementById("servico").value;
-        const data     = document.getElementById("data").value;
-        const hora     = document.getElementById("hora").value;
+          renderizarAgendamentos(listaFiltrada);
+        } catch (e) {
+          lista.innerHTML = "<p>Erro ao carregar agendamentos.</p>";
+        }
+      }
 
-        if (!nome || !whatsapp || !servico || !data || !hora) {
-          mensagem.textContent = "Preencha todos os campos!";
-          mensagem.classList.add("error");
+      function renderizarAgendamentos(agendamentos) {
+        lista.innerHTML = "";
+
+        if (agendamentos.length === 0) {
+          lista.innerHTML = "<p>Nenhum agendamento encontrado.</p>";
           return;
         }
 
-        const formData = new URLSearchParams();
-        formData.append("action", "create");
-        formData.append("clientName", nome);
-        formData.append("whatsapp", whatsapp);
-        formData.append("service", servico);
-        formData.append("date", data);
-        formData.append("time", hora);
+        agendamentos.forEach((apt) => {
+          const div = document.createElement("div");
+          div.className = "appointment";
 
-        try {
-          const res = await fetch(API_URL, {
-            method: "POST",
-            body: formData
+          div.innerHTML = `
+            <strong>${apt.clientName}</strong> - ${apt.service}<br>
+            ${apt.date} às ${apt.time}<br>
+            <span class="status status-${apt.status}">${apt.status}</span><br>
+            WhatsApp: ${apt.whatsapp}<br>
+          `;
+
+          const adminBtns = document.createElement("div");
+          adminBtns.className = "admin-buttons";
+
+          ["confirmed", "canceled"].forEach(status => {
+            const btn = document.createElement("button");
+            btn.textContent = status === "confirmed" ? "✅ Confirmar" : "❌ Cancelar";
+            btn.onclick = () => atualizarStatus(apt.id, status);
+            adminBtns.appendChild(btn);
           });
-          const json = await res.json();
 
-          if (json.success) {
-            mensagem.textContent = "Agendamento enviado com sucesso! 💕";
-            mensagem.classList.remove("error");
-            form.reset();
-          } else {
-            throw new Error(json.error || "Erro inesperado.");
+          const btnWhats = document.createElement("button");
+          btn.textContent = "📲 WhatsApp";
+          btn.onclick = () => {
+            const msg = `Olá ${apt.clientName}, seu horário para ${apt.service} foi ${apt.status.toUpperCase()}.`;
+            window.open(`https://wa.me/55${apt.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
+          };
+          adminBtns.appendChild(btnWhats);
+
+          div.appendChild(adminBtns);
+          lista.appendChild(div);
+        });
+      }
+
+      async function atualizarStatus(id, novoStatus) {
+        const formData = new URLSearchParams();
+        formData.append("action", "updateStatus");
+        formData.append("id", id);
+        formData.append("status", novoStatus);
+
+        await fetch(API_URL, {
+          method: "POST",
+          body: formData
+        });
+
+        await buscarAgendamentos();
+      }
+
+      if (form) {
+        form.addEventListener("submit", async (e) => {
+          e.preventDefault();
+
+          const nome = document.getElementById("nome").value.trim();
+          const whatsapp = document.getElementById("whatsapp").value.trim();
+          const servico = document.getElementById("servico").value;
+          const data = document.getElementById("data").value;
+          const hora = document.getElementById("hora").value;
+
+          const formData = new URLSearchParams();
+          formData.append("action", "create");
+          formData.append("clientName", nome);
+          formData.append("whatsapp", whatsapp);
+          formData.append("service", servico);
+          formData.append("date", data);
+          formData.append("time", hora);
+
+          try {
+            const res = await fetch(API_URL, {
+              method: "POST",
+              body: formData
+            });
+            const json = await res.json();
+
+            if (json.success) {
+              msgEl.textContent = "Agendamento enviado com sucesso! 💖";
+              form.reset();
+            } else {
+              msgEl.textContent = "Erro ao agendar.";
+            }
+          } catch (err) {
+            msgEl.textContent = "Erro na conexão com servidor.";
           }
-        } catch (err) {
-          console.error(err);
-          mensagem.textContent = "Erro ao enviar o agendamento.";
-          mensagem.classList.add("error");
-        }
-      });
+        });
+      }
+
+      if (statusFilter) {
+        statusFilter.addEventListener("change", buscarAgendamentos);
+      }
+
+      if (isAdmin) buscarAgendamentos();
     });
   </script>
 </body>
