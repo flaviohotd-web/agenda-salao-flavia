@@ -1,297 +1,161 @@
-<script>
-  // ================== CONFIG DA API (coloque sua URL aqui) ==================
-  const API_URL = "https://script.google.com/macros/s/SEU_ID_DO_WEBAPP/exec";
-
-  // ================== ESTADO GLOBAL ==================
-  let appointments = [];
-  let currentFilter = "all";
-
-  const form         = document.getElementById("appointment-form");
-  const listEl       = document.getElementById("appointments-list");
-  const statusFilter = document.getElementById("status-filter");
-  const counterEl    = document.getElementById("appointments-counter");
-
-  const params = new URLSearchParams(window.location.search);
-  const isAdmin = params.get("admin") === "1";
-
-  document.body.classList.remove("admin", "client");
-  document.body.classList.add(isAdmin ? "admin" : "client");
-
-  // ================== API ==================
-  async function fetchAppointmentsFromServer() {
-    try {
-      const url = `${API_URL}?status=${encodeURIComponent(currentFilter)}`;
-      const res = await fetch(url);
-      const json = await res.json();
-      appointments = json.appointments || [];
-      renderAppointments();
-    } catch (err) {
-      console.error("Erro ao buscar agendamentos:", err);
-      listEl.innerHTML = `<div class="no-appointments">Erro ao carregar agendamentos.</div>`;
-    }
-  }
-
-  async function createAppointmentOnServer(apt) {
-    const formData = new URLSearchParams();
-    formData.append("action", "create");
-    formData.append("id", apt.id);
-    formData.append("clientName", apt.clientName);
-    formData.append("whatsapp", apt.whatsapp);
-    formData.append("service", apt.service);
-    formData.append("date", apt.date);
-    formData.append("time", apt.time);
-
-    await fetch(API_URL, {
-      method: "POST",
-      body: formData
-    });
-  }
-
-  async function updateStatusOnServer(id, status) {
-    const formData = new URLSearchParams();
-    formData.append("action", "updateStatus");
-    formData.append("id", id);
-    formData.append("status", status);
-
-    await fetch(API_URL, {
-      method: "POST",
-      body: formData
-    });
-  }
-
-  // ================== RENDER ==================
-  function renderAppointments() {
-    if (!listEl || !counterEl) return;
-
-    listEl.innerHTML = "";
-
-    const filtered = appointments.filter((apt) => {
-      if (currentFilter === "all") return true;
-      return apt.status === currentFilter;
-    });
-
-    counterEl.textContent =
-      appointments.length === 1
-        ? "1 agendamento"
-        : `${appointments.length} agendamentos`;
-
-    if (filtered.length === 0) {
-      listEl.innerHTML = `<div class="no-appointments">Nenhum agendamento encontrado.</div>`;
-      return;
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Agenda - Salão da Flávia</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 16px;
+      background: #fff0f5;
     }
 
-    filtered
-      .slice()
-      .sort((a, b) => {
-        const da = `${a.date} ${a.time}`;
-        const db = `${b.date} ${b.time}`;
-        return da.localeCompare(db);
-      })
-      .forEach((apt) => {
-        const card = document.createElement("div");
-        card.className = "appointment-card";
+    .card {
+      max-width: 480px;
+      margin: auto;
+      background: white;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      padding: 20px;
+    }
 
-        const main = document.createElement("div");
-        main.className = "appointment-main";
+    h2 {
+      text-align: center;
+      color: #c2185b;
+    }
 
-        const title = document.createElement("div");
-        title.innerHTML = `<strong>${apt.clientName}</strong>`;
+    label {
+      display: block;
+      margin-top: 10px;
+      font-weight: bold;
+      font-size: 0.9rem;
+    }
 
-        const service = document.createElement("span");
-        service.className = "pill";
-        service.textContent = apt.service;
+    input, select {
+      width: 100%;
+      padding: 8px;
+      margin-top: 4px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 10px;
+    }
 
-        const info = document.createElement("div");
-        info.className = "appointment-meta";
-        info.textContent = formatDate(apt.date) + " • " + apt.time;
+    button {
+      width: 100%;
+      padding: 10px;
+      background-color: #e91e63;
+      color: white;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 1rem;
+    }
 
-        const whatsappInfo = document.createElement("div");
-        whatsappInfo.className = "appointment-meta";
-        whatsappInfo.textContent = "WhatsApp: " + (apt.whatsapp || "");
+    .status {
+      margin-top: 20px;
+      font-size: 0.9rem;
+      color: green;
+      text-align: center;
+    }
 
-        const statusLabel = document.createElement("span");
-        statusLabel.className = "status";
-        statusLabel.classList.add(
-          apt.status === "pending"   ? "status-pending" :
-          apt.status === "confirmed" ? "status-confirmed" :
-          "status-canceled"
-        );
-        statusLabel.textContent =
-          apt.status === "pending"   ? "Pendente" :
-          apt.status === "confirmed" ? "Confirmado" :
-          "Cancelado";
+    .error {
+      color: red;
+    }
+  </style>
+</head>
+<body>
+  <div class="card">
+    <h2>Agendamento - Salão da Flávia</h2>
 
-        main.appendChild(title);
-        main.appendChild(service);
-        main.appendChild(info);
-        main.appendChild(whatsappInfo);
-        main.appendChild(statusLabel);
+    <form id="form-agendamento">
+      <label for="nome">Nome completo</label>
+      <input id="nome" type="text" required />
 
-        const actions = document.createElement("div");
-        actions.className = "appointment-actions";
+      <label for="whatsapp">WhatsApp</label>
+      <input id="whatsapp" type="tel" required placeholder="(00) 00000-0000" />
 
-        if (isAdmin) {
-          const confirmBtn = document.createElement("button");
-          confirmBtn.className = "secondary btn-sm";
-          confirmBtn.textContent = "✅ Confirmar";
-          confirmBtn.onclick = () => handleStatusChange(apt, "confirmed");
+      <label for="servico">Serviço</label>
+      <select id="servico" required>
+        <option value="">Escolha</option>
+        <option value="Corte feminino">Corte feminino</option>
+        <option value="Corte masculino">Corte masculino</option>
+        <option value="Coloração">Coloração</option>
+        <option value="Escova">Escova</option>
+        <option value="Progressiva">Progressiva</option>
+      </select>
 
-          const cancelBtn = document.createElement("button");
-          cancelBtn.className = "secondary btn-sm";
-          cancelBtn.textContent = "❌ Cancelar";
-          cancelBtn.onclick = () => handleStatusChange(apt, "canceled");
+      <label for="data">Data</label>
+      <input id="data" type="date" required />
 
-          const whatsBtn = document.createElement("button");
-          whatsBtn.className = "primary btn-sm";
-          whatsBtn.textContent = "📲 WhatsApp";
-          whatsBtn.onclick = () => openWhatsapp(apt);
+      <label for="hora">Hora</label>
+      <input id="hora" type="time" required />
 
-          actions.appendChild(confirmBtn);
-          actions.appendChild(cancelBtn);
-          actions.appendChild(whatsBtn);
-        } else {
-          const info = document.createElement("span");
-          info.className = "helper-text";
-          info.textContent = "Pedido enviado! A confirmação será via WhatsApp.";
-          actions.appendChild(info);
+      <button type="submit">Agendar</button>
+    </form>
+
+    <div id="mensagem" class="status"></div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+      const API_URL = "https://script.google.com/macros/s/AKfycbwuiSvV8oRh5r6AD2H_fIKgIENcjTXUCzt6DuJdgyTxVG6Rw2M89hB1hXsXyuDkFpg/exec";
+
+      const form = document.getElementById("form-agendamento");
+      const mensagem = document.getElementById("mensagem");
+
+      const dataInput = document.getElementById("data");
+      const hoje = new Date();
+      const yyyy = hoje.getFullYear();
+      const mm = String(hoje.getMonth() + 1).padStart(2, "0");
+      const dd = String(hoje.getDate()).padStart(2, "0");
+      dataInput.min = `${yyyy}-${mm}-${dd}`;
+
+      form.addEventListener("submit", async function (e) {
+        e.preventDefault();
+        mensagem.textContent = "";
+
+        const nome     = document.getElementById("nome").value.trim();
+        const whatsapp = document.getElementById("whatsapp").value.trim();
+        const servico  = document.getElementById("servico").value;
+        const data     = document.getElementById("data").value;
+        const hora     = document.getElementById("hora").value;
+
+        if (!nome || !whatsapp || !servico || !data || !hora) {
+          mensagem.textContent = "Preencha todos os campos!";
+          mensagem.classList.add("error");
+          return;
         }
 
-        card.appendChild(main);
-        card.appendChild(actions);
-        listEl.appendChild(card);
+        const formData = new URLSearchParams();
+        formData.append("action", "create");
+        formData.append("clientName", nome);
+        formData.append("whatsapp", whatsapp);
+        formData.append("service", servico);
+        formData.append("date", data);
+        formData.append("time", hora);
+
+        try {
+          const res = await fetch(API_URL, {
+            method: "POST",
+            body: formData
+          });
+          const json = await res.json();
+
+          if (json.success) {
+            mensagem.textContent = "Agendamento enviado com sucesso! 💕";
+            mensagem.classList.remove("error");
+            form.reset();
+          } else {
+            throw new Error(json.error || "Erro inesperado.");
+          }
+        } catch (err) {
+          console.error(err);
+          mensagem.textContent = "Erro ao enviar o agendamento.";
+          mensagem.classList.add("error");
+        }
       });
-  }
-
-  // ================== UTILITÁRIOS ==================
-  function formatDate(isoDate) {
-    if (!isoDate) return "";
-    const [y, m, d] = isoDate.split("-");
-    return `${d}/${m}/${y}`;
-  }
-
-  function normalizeWhatsapp(raw) {
-    const digits = raw.replace(/\D/g, "");
-    return digits.length >= 10 ? digits : null;
-  }
-
-  function withinBusinessHours(timeStr) {
-    const [h, m] = timeStr.split(":").map(Number);
-    const minutes = h * 60 + m;
-    return minutes >= 540 && minutes <= 1140; // 09:00 a 19:00
-  }
-
-  async function updateStatus(id, status) {
-    await updateStatusOnServer(id, status);
-    await fetchAppointmentsFromServer();
-  }
-
-  async function handleStatusChange(apt, status) {
-    await updateStatus(apt.id, status);
-    notifyWhatsapp(apt, status);
-  }
-
-  function notifyWhatsapp(apt, status) {
-    const raw = normalizeWhatsapp(apt.whatsapp);
-    if (!raw) {
-      alert("WhatsApp inválido ou não informado.");
-      return;
-    }
-
-    const statusText = {
-      confirmed: "CONFIRMADO ✅",
-      canceled: "CANCELADO ❌",
-      pending: "PENDENTE DE CONFIRMAÇÃO"
-    }[status] || status;
-
-    const message = encodeURIComponent(
-      `Olá, ${apt.clientName}!\n\n` +
-      `Seu horário para *${apt.service}* em *${formatDate(apt.date)}* às *${apt.time}* foi *${statusText}*.\n\n` +
-      `Se precisar, estamos à disposição no salão da Tia. 💕`
-    );
-
-    window.open(`https://wa.me/55${raw}?text=${message}`, "_blank");
-  }
-
-  function openWhatsapp(apt) {
-    const raw = normalizeWhatsapp(apt.whatsapp);
-    if (!raw) {
-      alert("WhatsApp inválido ou não informado.");
-      return;
-    }
-
-    const message = encodeURIComponent(`Olá, ${apt.clientName}! Aqui é do salão da Tia.`);
-    window.open(`https://wa.me/55${raw}?text=${message}`, "_blank");
-  }
-
-  // ================== EVENTOS ==================
-  if (form) {
-    form.addEventListener("submit", async (e) => {
-      e.preventDefault();
-
-      const clientName = document.getElementById("client-name").value.trim();
-      const whatsapp   = document.getElementById("client-whatsapp").value.trim();
-      const service    = document.getElementById("service").value;
-      const date       = document.getElementById("date").value;
-      const time       = document.getElementById("time").value;
-
-      if (!clientName || !whatsapp || !service || !date || !time) {
-        alert("Preencha todos os campos.");
-        return;
-      }
-
-      const normalized = normalizeWhatsapp(whatsapp);
-      if (!normalized) {
-        alert("WhatsApp inválido.");
-        return;
-      }
-
-      if (!withinBusinessHours(time)) {
-        alert("Horário fora do funcionamento (09h–19h).");
-        return;
-      }
-
-      const newAppointment = {
-        id: Date.now().toString(),
-        clientName,
-        whatsapp,
-        service,
-        date,
-        time,
-        status: "pending",
-        createdAt: new Date().toISOString()
-      };
-
-      try {
-        await createAppointmentOnServer(newAppointment);
-        await fetchAppointmentsFromServer();
-        form.reset();
-        alert("Pedido enviado! A confirmação será feita via WhatsApp.");
-      } catch (err) {
-        console.error("Erro ao criar agendamento:", err);
-        alert("Erro ao enviar o pedido. Tente novamente.");
-      }
     });
-  }
-
-  if (statusFilter) {
-    statusFilter.addEventListener("change", async (e) => {
-      currentFilter = e.target.value;
-      await fetchAppointmentsFromServer();
-    });
-  }
-
-  // ================== INIT ==================
-  (async function init() {
-    const dateInput = document.getElementById("date");
-    if (dateInput) {
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, "0");
-      const d = String(today.getDate()).padStart(2, "0");
-      dateInput.min = `${y}-${m}-${d}`;
-      dateInput.value = `${y}-${m}-${d}`;
-    }
-
-    await fetchAppointmentsFromServer();
-  })();
-</script>
+  </script>
+</body>
+</html>
