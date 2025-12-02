@@ -5,15 +5,6 @@
   <title>Agenda - Salão da Flávia</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
   <style>
-    /* Por padrão (sem admin), o painel some e o formulário ocupa a tela toda */
-    body:not(.admin) #admin-panel {
-      display: none;
-    }
-
-    body:not(.admin) .layout {
-      grid-template-columns: 1fr;
-    }
-
     :root {
       --primary: #e91e63;
       --primary-dark: #c2185b;
@@ -63,14 +54,24 @@
 
     .layout {
       display: grid;
-      grid-template-columns: 2fr 3fr;
+      grid-template-columns: 1fr;
       gap: 16px;
     }
 
-    @media (max-width: 768px) {
-      .layout {
-        grid-template-columns: 1fr;
-      }
+    /* CLIENTE: só formulário */
+    body.client #client-panel {
+      display: block;
+    }
+    body.client #admin-panel {
+      display: none;
+    }
+
+    /* ADMIN: só painel */
+    body.admin #client-panel {
+      display: none;
+    }
+    body.admin #admin-panel {
+      display: block;
     }
 
     .card {
@@ -268,6 +269,14 @@
       font-size: 0.7rem;
       color: var(--muted);
     }
+
+    .whatsapp-link {
+      display: inline-block;
+      margin-top: 8px;
+      font-size: 0.8rem;
+      text-decoration: none;
+      color: #1f7a1f;
+    }
   </style>
 </head>
 <body>
@@ -279,8 +288,8 @@
     </header>
 
     <div class="layout">
-      <!-- FORMULÁRIO DE AGENDAMENTO (CLIENTE) -->
-      <section class="card">
+      <!-- PAINEL DO CLIENTE -->
+      <section id="client-panel" class="card">
         <h2>Agendar horário <span class="badge">Cliente</span></h2>
 
         <form id="appointment-form">
@@ -338,9 +347,18 @@
             ✨ Confirmar solicitação
           </button>
         </form>
+
+        <!-- Botão opcional: cliente falar com o salão -->
+        <a
+          class="whatsapp-link"
+          href="https://wa.me/5562998083581"
+          target="_blank"
+        >
+          💬 Falar com o salão pelo WhatsApp
+        </a>
       </section>
 
-      <!-- PAINEL DA CABELEIREIRA (MASTER) -->
+      <!-- PAINEL DA CABELEIREIRA (ADMIN) -->
       <section id="admin-panel" class="card">
         <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
 
@@ -369,7 +387,7 @@
   </div>
 
   <script>
-    // ----------------- UTILITÁRIOS DE STORAGE -----------------
+    // ----------------- STORAGE -----------------
     const STORAGE_KEY = "salao_tia_agendamentos_v1";
 
     function loadAppointments() {
@@ -396,12 +414,14 @@
     const statusFilter = document.getElementById("status-filter");
     const counterEl = document.getElementById("appointments-counter");
 
-    // ----------------- MODO ADMIN (link master) -----------------
+    // ----------------- MODO (CLIENTE x ADMIN) -----------------
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
 
     if (isAdmin) {
       document.body.classList.add("admin");
+    } else {
+      document.body.classList.add("client");
     }
 
     // ----------------- RENDER -----------------
@@ -510,7 +530,7 @@
             const info = document.createElement("span");
             info.className = "helper-text";
             info.textContent =
-              "Somente a cabeleireira pode gerenciar os horários (acesso master).";
+              "Pedido enviado! A confirmação será feita pelo WhatsApp do salão.";
             actions.appendChild(info);
           }
 
@@ -585,12 +605,10 @@
       );
     });
 
-    if (statusFilter) {
-      statusFilter.addEventListener("change", (e) => {
-        currentFilter = e.target.value;
-        renderAppointments();
-      });
-    }
+    statusFilter.addEventListener("change", (e) => {
+      currentFilter = e.target.value;
+      renderAppointments();
+    });
 
     // ----------------- INIT -----------------
     (function init() {
