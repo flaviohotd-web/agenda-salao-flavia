@@ -332,8 +332,10 @@
       </section>
 
     <!-- PAINEL DA CABELEIREIRA -->
-<section class="card">
+<section id="admin-panel" class="card">
   <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
+  ...
+
 
   <!-- Login simples para cabeleireira -->
   <div class="admin-row">
@@ -413,6 +415,22 @@
     const adminButton = document.getElementById("admin-button");
     let isAdmin = false;
     const ADMIN_PIN = "1234"; // TROQUE para um PIN que só a sua tia saiba
+    
+    // ------- controle de página cliente x página master -------
+const adminPanel = document.getElementById("admin-panel");
+const layout = document.querySelector(".layout");
+const urlParams = new URLSearchParams(window.location.search);
+const isAdminPage = urlParams.get("admin") === "1";
+
+// se NÃO for a página master (?admin=1), esconde o painel
+if (!isAdminPage && adminPanel) {
+  adminPanel.style.display = "none";
+  // deixa o formulário ocupando a largura toda
+  if (layout) {
+    layout.style.gridTemplateColumns = "1fr";
+  }
+}
+
 
     // ----------------- RENDER -----------------
     function renderAppointments() {
@@ -635,6 +653,7 @@
       renderAppointments();
     })();
   </script>
+
 
 
 
