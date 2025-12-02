@@ -331,19 +331,39 @@
         </form>
       </section>
 
-      <!-- PAINEL DA CABELEIREIRA -->
-      <section class="card">
-        <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
+    <!-- PAINEL DA CABELEIREIRA -->
+<section class="card">
+  <h2>Painel da Cabeleireira <span class="badge">Gestão</span></h2>
 
-        <div class="topbar">
-          <span id="appointments-counter">0 agendamentos</span>
-          <select id="status-filter" class="filter-select">
-            <option value="all">Todos os status</option>
-            <option value="pending">Pendentes</option>
-            <option value="confirmed">Confirmados</option>
-            <option value="canceled">Cancelados</option>
-          </select>
-        </div>
+  <!-- Login simples para cabeleireira -->
+  <div class="admin-row">
+    <label for="admin-pin">Modo cabeleireira (restrito)</label>
+    <div style="display:flex; gap:8px; margin:4px 0 6px;">
+      <input
+        id="admin-pin"
+        type="password"
+        placeholder="Digite o PIN"
+        style="max-width:140px;"
+      />
+      <button type="button" class="secondary btn-sm" id="admin-button">
+        Entrar
+      </button>
+    </div>
+    <div class="helper-text">
+      Somente a cabeleireira deve saber esse PIN.
+    </div>
+  </div>
+
+  <div class="topbar">
+    <span id="appointments-counter">0 agendamentos</span>
+    <select id="status-filter" class="filter-select">
+      <option value="all">Todos os status</option>
+      <option value="pending">Pendentes</option>
+      <option value="confirmed">Confirmados</option>
+      <option value="canceled">Cancelados</option>
+    </select>
+  </div>
+
 
         <div class="appointments-list" id="appointments-list">
           <div class="no-appointments">
@@ -580,3 +600,4 @@
   </script>
 </body>
 </html>
+
