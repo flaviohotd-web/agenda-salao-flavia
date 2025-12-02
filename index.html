@@ -508,37 +508,26 @@
           actions.className = "appointment-actions";
 
           if (isAdmin) {
-            const btnConfirm = document.createElement("button");
-            btnConfirm.className = "secondary btn-sm";
-            btnConfirm.textContent = "✅ Confirmar";
-            btnConfirm.onclick = () => updateStatus(apt.id, "confirmed");
+  const btnConfirm = document.createElement("button");
+  btnConfirm.className = "secondary btn-sm";
+  btnConfirm.textContent = "✅ Confirmar";
+  btnConfirm.onclick = () => handleStatusChange(apt, "confirmed");
 
-            const btnCancel = document.createElement("button");
-            btnCancel.className = "secondary btn-sm";
-            btnCancel.textContent = "❌ Cancelar";
-            btnCancel.onclick = () => updateStatus(apt.id, "canceled");
+  const btnCancel = document.createElement("button");
+  btnCancel.className = "secondary btn-sm";
+  btnCancel.textContent = "❌ Cancelar";
+  btnCancel.onclick = () => handleStatusChange(apt, "canceled");
 
-            const btnWhats = document.createElement("button");
-            btnWhats.className = "primary btn-sm";
-            btnWhats.textContent = "📲 WhatsApp";
-            btnWhats.onclick = () => openWhatsapp(apt);
+  const btnWhats = document.createElement("button");
+  btnWhats.className = "primary btn-sm";
+  btnWhats.textContent = "📲 WhatsApp";
+  btnWhats.onclick = () => openWhatsapp(apt);
 
-            actions.appendChild(btnConfirm);
-            actions.appendChild(btnCancel);
-            actions.appendChild(btnWhats);
-          } else {
-            const info = document.createElement("span");
-            info.className = "helper-text";
-            info.textContent =
-              "Pedido enviado! A confirmação será feita pelo WhatsApp do salão.";
-            actions.appendChild(info);
-          }
+  actions.appendChild(btnConfirm);
+  actions.appendChild(btnCancel);
+  actions.appendChild(btnWhats);
+}
 
-          card.appendChild(main);
-          card.appendChild(actions);
-          listEl.appendChild(card);
-        });
-    }
 
     // ----------------- FUNÇÕES AUXILIARES -----------------
     function formatDate(isoDate) {
@@ -566,6 +555,37 @@
       const url = `https://wa.me/55${raw}?text=${message}`;
       window.open(url, "_blank");
     }
+          // Atualiza o status e já abre o WhatsApp com mensagem pronta
+function handleStatusChange(apt, newStatus) {
+  // 1) atualiza no sistema
+  updateStatus(apt.id, newStatus);
+
+  // 2) envia mensagem automática (abre o WhatsApp com o texto)
+  notifyWhatsapp(apt, newStatus);
+}
+
+function notifyWhatsapp(apt, newStatus) {
+  const raw = apt.whatsapp.replace(/\D/g, "");
+
+  let statusTexto;
+  if (newStatus === "confirmed") {
+    statusTexto = "CONFIRMADO ✅";
+  } else if (newStatus === "canceled") {
+    statusTexto = "CANCELADO ❌";
+  } else {
+    statusTexto = "PENDENTE DE CONFIRMAÇÃO";
+  }
+
+  const message = encodeURIComponent(
+    `Olá, ${apt.clientName}! Aqui é do salão da Tia.\n\n` +
+    `Seu horário para *${apt.service}* em *${formatDate(apt.date)}* às *${apt.time}* foi *${statusTexto}*.\n\n` +
+    `Qualquer dúvida é só chamar por aqui. 💕`
+  );
+
+  const url = `https://wa.me/55${raw}?text=${message}`;
+  window.open(url, "_blank");
+}
+
 
     // ----------------- EVENTOS -----------------
     form.addEventListener("submit", (e) => {
@@ -625,3 +645,4 @@
   </script>
 </body>
 </html>
+
