@@ -380,6 +380,7 @@
   </div>
 
   <script>
+      <script>
     // ----------------- UTILITÁRIOS DE STORAGE -----------------
     const STORAGE_KEY = "salao_tia_agendamentos_v1";
 
@@ -406,6 +407,12 @@
     const listEl = document.getElementById("appointments-list");
     const statusFilter = document.getElementById("status-filter");
     const counterEl = document.getElementById("appointments-counter");
+
+    // elementos do modo cabeleireira
+    const adminPinInput = document.getElementById("admin-pin");
+    const adminButton = document.getElementById("admin-button");
+    let isAdmin = false;
+    const ADMIN_PIN = "1234"; // TROQUE para um PIN que só a sua tia saiba
 
     // ----------------- RENDER -----------------
     function renderAppointments() {
@@ -487,27 +494,36 @@
           main.appendChild(whatsapp);
           main.appendChild(statusLabel);
 
+          // ações (só aparecem para cabeleireira logada)
           const actions = document.createElement("div");
           actions.className = "appointment-actions";
 
-          const btnConfirm = document.createElement("button");
-          btnConfirm.className = "secondary btn-sm";
-          btnConfirm.textContent = "✅ Confirmar";
-          btnConfirm.onclick = () => updateStatus(apt.id, "confirmed");
+          if (isAdmin) {
+            const btnConfirm = document.createElement("button");
+            btnConfirm.className = "secondary btn-sm";
+            btnConfirm.textContent = "✅ Confirmar";
+            btnConfirm.onclick = () => updateStatus(apt.id, "confirmed");
 
-          const btnCancel = document.createElement("button");
-          btnCancel.className = "secondary btn-sm";
-          btnCancel.textContent = "❌ Cancelar";
-          btnCancel.onclick = () => updateStatus(apt.id, "canceled");
+            const btnCancel = document.createElement("button");
+            btnCancel.className = "secondary btn-sm";
+            btnCancel.textContent = "❌ Cancelar";
+            btnCancel.onclick = () => updateStatus(apt.id, "canceled");
 
-          const btnWhats = document.createElement("button");
-          btnWhats.className = "primary btn-sm";
-          btnWhats.textContent = "📲 WhatsApp";
-          btnWhats.onclick = () => openWhatsapp(apt);
+            const btnWhats = document.createElement("button");
+            btnWhats.className = "primary btn-sm";
+            btnWhats.textContent = "📲 WhatsApp";
+            btnWhats.onclick = () => openWhatsapp(apt);
 
-          actions.appendChild(btnConfirm);
-          actions.appendChild(btnCancel);
-          actions.appendChild(btnWhats);
+            actions.appendChild(btnConfirm);
+            actions.appendChild(btnCancel);
+            actions.appendChild(btnWhats);
+          } else {
+            const info = document.createElement("span");
+            info.className = "helper-text";
+            info.textContent =
+              "Somente a cabeleireira pode gerenciar os horários.";
+            actions.appendChild(info);
+          }
 
           card.appendChild(main);
           card.appendChild(actions);
@@ -530,6 +546,7 @@
     }
 
     function openWhatsapp(apt) {
+      // usa o número digitado no formulário (com DDD)
       const raw = apt.whatsapp.replace(/\D/g, "");
       const message = encodeURIComponent(
         `Olá, ${apt.clientName}! Aqui é do salão da Tia. Seu horário para ${apt.service} em ${formatDate(
@@ -567,7 +584,7 @@
         date,
         time,
         status: "pending",
-        createdAt: new Date().toISOString(),
+        createdAt: new Date().toISOString()
       };
 
       appointments.push(newAppointment);
@@ -585,6 +602,26 @@
       renderAppointments();
     });
 
+    // botão do PIN da cabeleireira
+    adminButton.addEventListener("click", () => {
+      const value = adminPinInput.value.trim();
+      if (!value) {
+        alert("Digite o PIN da cabeleireira.");
+        return;
+      }
+
+      if (value === ADMIN_PIN) {
+        isAdmin = true;
+        adminPinInput.value = "";
+        adminPinInput.disabled = true;
+        adminButton.textContent = "Cabeleireira conectada";
+        adminButton.disabled = true;
+        renderAppointments();
+      } else {
+        alert("PIN incorreto.");
+      }
+    });
+
     // ----------------- INIT: define data mínima = hoje -----------------
     (function init() {
       const dateInput = document.getElementById("date");
@@ -598,6 +635,6 @@
       renderAppointments();
     })();
   </script>
-</body>
-</html>
+
+
 
