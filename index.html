@@ -10,13 +10,14 @@
     :root {
       --primary: #e91e63;
       --primary-dark: #c2185b;
-      --bg: #faf5f7;
+      --bg: #fff5fb;
       --card-bg: #ffffff;
       --text: #333333;
       --muted: #777777;
-      --radius: 16px;
+      --radius: 18px;
       --shadow: 0 10px 25px rgba(0, 0, 0, 0.06);
       --success: #25D366;
+      --accent-jp: #ffb3c6;
     }
 
     * {
@@ -27,7 +28,12 @@
 
     body {
       margin: 0;
-      background: radial-gradient(circle at top left, #ffe3ee, #faf5f7);
+      min-height: 100vh;
+      background:
+        radial-gradient(circle at 10% 20%, rgba(255, 182, 193, 0.45) 0, transparent 55%),
+        radial-gradient(circle at 90% 10%, rgba(255, 228, 225, 0.55) 0, transparent 55%),
+        radial-gradient(circle at 50% 90%, rgba(255, 204, 213, 0.45) 0, transparent 60%),
+        #ffeaf5;
       color: var(--text);
       display: flex;
       justify-content: center;
@@ -37,22 +43,54 @@
     .app {
       width: 100%;
       max-width: 960px;
+      position: relative;
     }
+
+    /* Detalhes “flor de sakura” no fundo */
+    .sakura {
+      position: fixed;
+      pointer-events: none;
+      opacity: 0.2;
+      z-index: -1;
+      font-size: 2.5rem;
+    }
+    .sakura.s1 { top: 12%; left: 5%; }
+    .sakura.s2 { top: 70%; right: 10%; }
+    .sakura.s3 { top: 30%; right: 30%; }
 
     header {
       text-align: center;
       margin-bottom: 16px;
     }
 
-    header h1 {
-      margin: 8px 0 4px 0;
-      font-size: 1.8rem;
+    header .jp-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      background: rgba(255, 255, 255, 0.8);
+      font-size: 0.8rem;
       color: var(--primary-dark);
+    }
+
+    header h1 {
+      margin: 10px 0 4px 0;
+      font-size: 2rem;
+      color: var(--primary-dark);
+      letter-spacing: 0.04em;
+    }
+
+    header h1 span.jp {
+      font-size: 1.2rem;
+      color: #c41c5f;
+      margin-left: 4px;
     }
 
     header p {
       margin: 0;
       color: var(--muted);
+      font-size: 0.9rem;
     }
 
     .layout {
@@ -81,7 +119,8 @@
       background: var(--card-bg);
       border-radius: var(--radius);
       box-shadow: var(--shadow);
-      padding: 16px 18px;
+      padding: 18px 20px;
+      border: 1px solid rgba(255, 192, 203, 0.35);
     }
 
     .card h2 {
@@ -95,10 +134,11 @@
 
     .badge {
       font-size: 0.7rem;
-      padding: 2px 8px;
+      padding: 3px 10px;
       border-radius: 999px;
-      background: #fce4ec;
+      background: #ffe3ef;
       color: var(--primary-dark);
+      box-shadow: 0 0 0 1px rgba(255, 192, 203, 0.4);
     }
 
     label {
@@ -112,13 +152,13 @@
     input,
     select {
       width: 100%;
-      padding: 8px 10px;
+      padding: 9px 11px;
       border-radius: 10px;
-      border: 1px solid #ddd;
+      border: 1px solid #f0d6df;
       font-size: 0.9rem;
       margin-bottom: 10px;
       outline: none;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      transition: border-color 0.2s, box-shadow 0.2s, background 0.2s;
       background-color: #fff;
     }
 
@@ -126,6 +166,7 @@
     select:focus {
       border-color: var(--primary);
       box-shadow: 0 0 0 2px rgba(233, 30, 99, 0.15);
+      background: #fff8fb;
     }
 
     button {
@@ -138,7 +179,7 @@
       display: inline-flex;
       align-items: center;
       gap: 6px;
-      transition: transform 0.1s, box-shadow 0.1s, background 0.15s;
+      transition: transform 0.1s, box-shadow 0.1s, background 0.15s, filter 0.1s;
     }
 
     button.primary {
@@ -149,11 +190,12 @@
 
     button.primary:hover {
       transform: translateY(-1px);
-      box-shadow: 0 8px 20px rgba(233, 30, 99, 0.4);
+      box-shadow: 0 8px 20px rgba(233, 30, 99, 0.45);
+      filter: brightness(1.02);
     }
 
     button.secondary {
-      background: #f3e5f5;
+      background: #f7e5ff;
       color: #6a1b9a;
     }
 
@@ -203,7 +245,7 @@
       border-radius: 12px;
       border: 1px solid #f1e0e5;
       padding: 10px 12px;
-      background: #fff9fb;
+      background: #fffafd;
       display: grid;
       grid-template-columns: 1fr auto;
       gap: 6px;
@@ -241,7 +283,7 @@
       font-size: 0.78rem;
       padding: 3px 8px;
       border-radius: 999px;
-      background: #fce4ec;
+      background: #ffe5f3;
       color: var(--primary-dark);
     }
 
@@ -256,7 +298,7 @@
     }
 
     .filter-select {
-      max-width: 150px;
+      max-width: 160px;
     }
 
     .no-appointments {
@@ -289,16 +331,29 @@
     }
 
     .whatsapp-btn:hover {
-      background: #1ebe5d;
+      filter: brightness(1.05);
+      transform: translateY(-1px);
+    }
+
+    @media (max-width: 768px) {
+      .card {
+        padding: 16px;
+      }
     }
   </style>
 </head>
 <body>
+  <div class="sakura s1">🌸</div>
+  <div class="sakura s2">🌸</div>
+  <div class="sakura s3">🌸</div>
+
   <div class="app">
     <header>
-      <p>💇‍♀️ Agenda Online</p>
-      <h1>Salão da Tia</h1>
-      <p>Agende seu horário de forma rápida e prática</p>
+      <div class="jp-tag">
+        🇯🇵 サロン &nbsp;•&nbsp; Estilo japonês
+      </div>
+      <h1>Salão da Tia <span class="jp">サロン</span></h1>
+      <p>Agende seu horário de forma rápida, delicada e prática ✨</p>
     </header>
 
     <div class="layout">
@@ -309,7 +364,7 @@
         <form id="appointment-form">
           <div>
             <label for="client-name">Nome completo</label>
-            <input id="client-name" type="text" placeholder="Ex: Maria Silva" required />
+            <input id="client-name" type="text" placeholder="Ex: Maria Tanaka" required />
           </div>
 
           <div>
@@ -319,7 +374,7 @@
           </div>
 
           <div>
-            <label for="service">Serviço</</label>
+            <label for="service">Serviço</label>
             <select id="service" required>
               <option value="">Selecione um serviço</option>
               <option value="Corte feminino">Corte feminino</option>
@@ -382,7 +437,7 @@
     </div>
 
     <footer>
-      Projeto de agendamento básico – personalizado para o salão da Tia. ✂️
+      Projeto de agendamento básico – com um toque japonês, personalizado para o salão da Tia. ✂️🌸
     </footer>
   </div>
 
@@ -404,17 +459,13 @@
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
 
-    document.body.classList.remove("admin");
-    document.body.classList.remove("client");
-    if (isAdmin) {
-      document.body.classList.add("admin");
-    } else {
-      document.body.classList.add("client");
-    }
+    document.body.classList.remove("admin", "client");
+    document.body.classList.add(isAdmin ? "admin" : "client");
 
     // ================== FUNÇÕES DE API ==================
     async function fetchAppointmentsFromServer() {
       try {
+        // Mesmo se o Apps Script ignorar o "status", não tem problema
         const url = `${API_URL}?status=${encodeURIComponent(currentFilter)}`;
         const res = await fetch(url);
         const json = await res.json();
@@ -428,24 +479,31 @@
       }
     }
 
+    // IMPORTANTE: POST como form-data (URLSearchParams) para funcionar em celular
     async function createAppointmentOnServer(apt) {
+      const formData = new URLSearchParams();
+      formData.append("action", "create");
+      formData.append("clientName", apt.clientName);
+      formData.append("whatsapp", apt.whatsapp);
+      formData.append("service", apt.service);
+      formData.append("date", apt.date);
+      formData.append("time", apt.time);
+
       await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({
-          action: "create",
-          appointment: apt
-        })
+        body: formData
       });
     }
 
     async function updateStatusOnServer(id, newStatus) {
+      const formData = new URLSearchParams();
+      formData.append("action", "updateStatus");
+      formData.append("id", id);
+      formData.append("status", newStatus);
+
       await fetch(API_URL, {
         method: "POST",
-        body: JSON.stringify({
-          action: "updateStatus",
-          id: id,
-          status: newStatus
-        })
+        body: formData
       });
     }
 
