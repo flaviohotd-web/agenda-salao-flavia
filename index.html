@@ -348,7 +348,7 @@
           </button>
         </form>
 
-        <!-- Botão WhatsApp FUNCIONANDO -->
+        <!-- Botão WhatsApp para o salão -->
         <a
           class="whatsapp-btn"
           href="https://wa.me/5562998083581"
@@ -387,48 +387,73 @@
   </div>
 
   <script>
-    // ----------------- STORAGE -----------------
-    const STORAGE_KEY = "salao_tia_agendamentos_v1";
+    // ================== CONFIGURAÇÃO DA API (Apps Script) ==================
+    const API_URL = "https://script.google.com/macros/s/AKfycbwuiSvV8oRh5r6AD2H_fIKgIENcjTXUCzt6DuJdgyTxVG6Rw2M89hB1hXsXyuDkFpg/exec";
 
-    function loadAppointments() {
-      const raw = localStorage.getItem(STORAGE_KEY);
-      if (!raw) return [];
-      try {
-        return JSON.parse(raw);
-      } catch {
-        return [];
-      }
-    }
-
-    function saveAppointments(list) {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(list));
-    }
-
-    // ----------------- ESTADO -----------------
-    let appointments = loadAppointments();
+    // ================== ESTADO GLOBAL ==================
+    let appointments = [];
     let currentFilter = "all";
 
-    // ----------------- ELEMENTOS -----------------
+    // ================== ELEMENTOS ==================
     const form = document.getElementById("appointment-form");
     const listEl = document.getElementById("appointments-list");
     const statusFilter = document.getElementById("status-filter");
     const counterEl = document.getElementById("appointments-counter");
 
-    // ----------------- MODO CLIENTE x ADMIN -----------------
     const params = new URLSearchParams(window.location.search);
     const isAdmin = params.get("admin") === "1";
 
     document.body.classList.remove("admin");
     document.body.classList.remove("client");
-
     if (isAdmin) {
       document.body.classList.add("admin");
     } else {
       document.body.classList.add("client");
     }
 
-    // ----------------- RENDER -----------------
+    // ================== FUNÇÕES DE API ==================
+    async function fetchAppointmentsFromServer() {
+      try {
+        const url = `${API_URL}?status=${encodeURIComponent(currentFilter)}`;
+        const res = await fetch(url);
+        const json = await res.json();
+        appointments = json.appointments || [];
+        renderAppointments();
+      } catch (err) {
+        console.error("Erro ao buscar agendamentos:", err);
+        if (listEl) {
+          listEl.innerHTML = `<div class="no-appointments">Erro ao carregar agendamentos. Tente novamente mais tarde.</div>`;
+        }
+      }
+    }
+
+    async function createAppointmentOnServer(apt) {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "create",
+          appointment: apt,
+        }),
+      });
+    }
+
+    async function updateStatusOnServer(id, newStatus) {
+      await fetch(API_URL, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          action: "updateStatus",
+          id: id,
+          status: newStatus,
+        }),
+      });
+    }
+
+    // ================== RENDER ==================
     function renderAppointments() {
+      if (!listEl || !counterEl) return;
+
       listEl.innerHTML = "";
 
       const filtered = appointments.filter((apt) => {
@@ -447,13 +472,13 @@
       if (filtered.length === 0) {
         const empty = document.createElement("div");
         empty.className = "no-appointments";
-        empty.textContent =
-          "Nenhum agendamento para o filtro selecionado.";
+        empty.textContent = "Nenhum agendamento para o filtro selecionado.";
         listEl.appendChild(empty);
         return;
       }
 
       filtered
+        .slice()
         .sort((a, b) => {
           const da = `${a.date} ${a.time}`;
           const db = `${b.date} ${b.time}`;
@@ -481,9 +506,9 @@
           dateTime.className = "appointment-meta";
           dateTime.textContent = formatDate(apt.date) + " • " + apt.time;
 
-          const whatsapp = document.createElement("div");
-          whatsapp.className = "appointment-meta";
-          whatsapp.textContent = "WhatsApp: " + apt.whatsapp;
+          const whatsappInfo = document.createElement("div");
+          whatsappInfo.className = "appointment-meta";
+          whatsappInfo.textContent = "WhatsApp: " + (apt.whatsapp || "");
 
           const statusLabel = document.createElement("span");
           statusLabel.classList.add(
@@ -504,7 +529,7 @@
           main.appendChild(title);
           main.appendChild(pillGroup);
           main.appendChild(dateTime);
-          main.appendChild(whatsapp);
+          main.appendChild(whatsappInfo);
           main.appendChild(statusLabel);
 
           const actions = document.createElement("div");
@@ -543,28 +568,43 @@
         });
     }
 
-    // ----------------- FUNÇÕES AUXILIARES -----------------
+    // ================== FUNÇÕES AUXILIARES ==================
     function formatDate(isoDate) {
+      if (!isoDate) return "";
       const [year, month, day] = isoDate.split("-");
       return `${day}/${month}/${year}`;
     }
 
-    function updateStatus(id, newStatus) {
-      appointments = appointments.map((apt) =>
-        apt.id === id ? { ...apt, status: newStatus } : apt
-      );
-      saveAppointments(appointments);
-      renderAppointments();
+    function normalizeWhatsapp(raw) {
+      if (!raw) return null;
+      const digits = raw.replace(/\D/g, "");
+      return digits.length >= 10 ? digits : null;
     }
 
-    // Atualiza e abre WhatsApp com mensagem pronta
-    function handleStatusChange(apt, newStatus) {
-      updateStatus(apt.id, newStatus);
+    function withinBusinessHours(timeStr) {
+      if (!timeStr) return false;
+      const [h, m] = timeStr.split(":").map(Number);
+      const total = h * 60 + m;
+      // 09:00 (540) até 19:00 (1140)
+      return total >= 540 && total <= 1140;
+    }
+
+    async function updateStatus(id, newStatus) {
+      await updateStatusOnServer(id, newStatus);
+      await fetchAppointmentsFromServer();
+    }
+
+    async function handleStatusChange(apt, newStatus) {
+      await updateStatus(apt.id, newStatus);
       notifyWhatsapp(apt, newStatus);
     }
 
     function notifyWhatsapp(apt, newStatus) {
-      const raw = apt.whatsapp.replace(/\D/g, "");
+      const raw = normalizeWhatsapp(apt.whatsapp);
+      if (!raw) {
+        alert("WhatsApp do cliente inválido ou não informado.");
+        return;
+      }
 
       let statusTexto;
       if (newStatus === "confirmed") {
@@ -586,7 +626,11 @@
     }
 
     function openWhatsapp(apt) {
-      const raw = apt.whatsapp.replace(/\D/g, "");
+      const raw = normalizeWhatsapp(apt.whatsapp);
+      if (!raw) {
+        alert("WhatsApp do cliente inválido ou não informado.");
+        return;
+      }
       const message = encodeURIComponent(
         `Olá, ${apt.clientName}! Aqui é do salão da Tia.`
       );
@@ -594,60 +638,86 @@
       window.open(url, "_blank");
     }
 
-    // ----------------- FORM SUBMIT -----------------
-    form.addEventListener("submit", (e) => {
-      e.preventDefault();
+    // ================== EVENTOS ==================
+    if (form) {
+      form.addEventListener("submit", async (e) => {
+        e.preventDefault();
 
-      const clientName = document.getElementById("client-name").value.trim();
-      const whatsapp = document.getElementById("client-whatsapp").value.trim();
-      const service = document.getElementById("service").value;
-      const date = document.getElementById("date").value;
-      const time = document.getElementById("time").value;
+        const clientName = document
+          .getElementById("client-name")
+          .value.trim();
+        const whatsappRaw = document
+          .getElementById("client-whatsapp")
+          .value.trim();
+        const service = document.getElementById("service").value;
+        const date = document.getElementById("date").value;
+        const time = document.getElementById("time").value;
 
-      if (!clientName || !whatsapp || !service || !date || !time) {
-        alert("Preencha todos os campos.");
-        return;
+        if (!clientName || !whatsappRaw || !service || !date || !time) {
+          alert("Preencha todos os campos.");
+          return;
+        }
+
+        const normalizedWhats = normalizeWhatsapp(whatsappRaw);
+        if (!normalizedWhats) {
+          alert("Informe um WhatsApp válido.");
+          return;
+        }
+
+        if (!withinBusinessHours(time)) {
+          alert("Horário deve ser entre 09:00 e 19:00.");
+          return;
+        }
+
+        const id = Date.now().toString();
+
+        const newAppointment = {
+          id,
+          clientName,
+          whatsapp: whatsappRaw,
+          service,
+          date,
+          time,
+          status: "pending",
+          createdAt: new Date().toISOString(),
+        };
+
+        try {
+          await createAppointmentOnServer(newAppointment);
+          await fetchAppointmentsFromServer();
+          form.reset();
+          alert(
+            "Pedido de agendamento enviado! A cabeleireira irá confirmar o horário pelo WhatsApp. 💕"
+          );
+        } catch (err) {
+          console.error("Erro ao criar agendamento:", err);
+          alert("Erro ao enviar o pedido. Tente novamente em instantes.");
+        }
+      });
+    }
+
+    if (statusFilter) {
+      statusFilter.addEventListener("change", async (e) => {
+        currentFilter = e.target.value;
+        await fetchAppointmentsFromServer();
+      });
+    }
+
+    // ================== INIT ==================
+    (async function init() {
+      const dateInput = document.getElementById("date");
+      if (dateInput) {
+        const today = new Date();
+        const y = today.getFullYear();
+        const m = String(today.getMonth() + 1).padStart(2, "0");
+        const d = String(today.getDate()).padStart(2, "0");
+        const min = `${y}-${m}-${d}`;
+        dateInput.min = min;
+        dateInput.value = min;
       }
 
-      const id = Date.now().toString();
-
-      const newAppointment = {
-        id,
-        clientName,
-        whatsapp,
-        service,
-        date,
-        time,
-        status: "pending",
-        createdAt: new Date().toISOString()
-      };
-
-      appointments.push(newAppointment);
-      saveAppointments(appointments);
-      renderAppointments();
-
-      form.reset();
-      alert(
-        "Pedido de agendamento enviado! A cabeleireira irá confirmar o horário pelo WhatsApp. 💕"
-      );
-    });
-
-    statusFilter.addEventListener("change", (e) => {
-      currentFilter = e.target.value;
-      renderAppointments();
-    });
-
-    // ----------------- INIT -----------------
-    (function init() {
-      const dateInput = document.getElementById("date");
-      const today = new Date();
-      const y = today.getFullYear();
-      const m = String(today.getMonth() + 1).padStart(2, "0");
-      const d = String(today.getDate()).padStart(2, "0");
-      const min = `${y}-${m}-${d}`;
-      dateInput.min = min;
-      dateInput.value = min;
-      renderAppointments();
+      // Sempre carrega agendamentos no início (admin ou não)
+      await fetchAppointmentsFromServer();
     })();
   </script>
 </body>
