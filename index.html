@@ -202,8 +202,8 @@
           });
 
           const btnWhats = document.createElement("button");
-          btn.textContent = "📲 WhatsApp";
-          btn.onclick = () => {
+          btnWhats.textContent = "📲 WhatsApp";
+          btnWhats.onclick = () => {
             const msg = `Olá ${apt.clientName}, seu horário para ${apt.service} foi ${apt.status.toUpperCase()}.`;
             window.open(`https://wa.me/55${apt.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
           };
@@ -215,7 +215,7 @@
       }
 
       async function atualizarStatus(id, novoStatus) {
-        const formData = new FormData();
+        const formData = new URLSearchParams();
         formData.append("action", "updateStatus");
         formData.append("id", id);
         formData.append("status", novoStatus);
@@ -238,7 +238,7 @@
           const data = document.getElementById("data").value;
           const hora = document.getElementById("hora").value;
 
-          const formData = new FormData();
+          const formData = new URLSearchParams();
           formData.append("action", "create");
           formData.append("clientName", nome);
           formData.append("whatsapp", whatsapp);
@@ -274,4 +274,3 @@
   </script>
 </body>
 </html>
-
