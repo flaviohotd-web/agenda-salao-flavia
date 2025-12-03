@@ -1,4 +1,3 @@
-<!-- index.html - versão final corrigida -->
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
@@ -216,17 +215,14 @@
       }
 
       async function atualizarStatus(id, novoStatus) {
-        const formData = new URLSearchParams();
+        const formData = new FormData();
         formData.append("action", "updateStatus");
         formData.append("id", id);
         formData.append("status", novoStatus);
 
         await fetch(API_URL, {
           method: "POST",
-          headers: {
-            "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-          },
-          body: formData.toString()
+          body: formData
         });
 
         await buscarAgendamentos();
@@ -242,7 +238,7 @@
           const data = document.getElementById("data").value;
           const hora = document.getElementById("hora").value;
 
-          const formData = new URLSearchParams();
+          const formData = new FormData();
           formData.append("action", "create");
           formData.append("clientName", nome);
           formData.append("whatsapp", whatsapp);
@@ -253,22 +249,18 @@
           try {
             const res = await fetch(API_URL, {
               method: "POST",
-              headers: {
-                "Content-Type": "application/x-www-form-urlencoded;charset=UTF-8"
-              },
-              body: formData.toString()
+              body: formData
             });
-
             const json = await res.json();
 
             if (json.success) {
-              msgEl.textContent = "Agendamento enviado com sucesso! 💖";
+              msgEl.textContent = "✅ Agendamento enviado com sucesso!";
               form.reset();
             } else {
-              msgEl.textContent = "Erro ao agendar.";
+              msgEl.textContent = "❌ Erro ao agendar.";
             }
           } catch (err) {
-            msgEl.textContent = "Erro na conexão com servidor.";
+            msgEl.textContent = "❌ Erro na conexão com o servidor.";
           }
         });
       }
