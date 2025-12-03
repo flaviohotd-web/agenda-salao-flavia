@@ -95,7 +95,7 @@
       <p>Faça seu agendamento online!</p>
     </header>
 
-    <!-- Formulário para cliente -->
+    <!-- Formulário Cliente -->
     <section id="client-panel" class="card">
       <h2>Agendar Horário</h2>
       <form id="form-agendamento">
@@ -144,6 +144,8 @@
 
   <script>
     document.addEventListener("DOMContentLoaded", () => {
+
+      // 🔗 INSIRA AQUI SUA URL ATUALIZADA DO APPS SCRIPT
       const API_URL = "https://script.google.com/macros/s/AKfycbwuiSvV8oRh5r6AD2H_fIKgIENcjTXUCzt6DuJdgyTxVG6Rw2M89hB1hXsXyuDkFpg/exec";
 
       const form = document.getElementById("form-agendamento");
@@ -202,8 +204,8 @@
           });
 
           const btnWhats = document.createElement("button");
-          btnWhats.textContent = "📲 WhatsApp";
-          btnWhats.onclick = () => {
+          btn.textContent = "📲 WhatsApp";
+          btn.onclick = () => {
             const msg = `Olá ${apt.clientName}, seu horário para ${apt.service} foi ${apt.status.toUpperCase()}.`;
             window.open(`https://wa.me/55${apt.whatsapp.replace(/\D/g, "")}?text=${encodeURIComponent(msg)}`, "_blank");
           };
